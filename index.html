@@ -20,4 +20,62 @@
 <button class="primary" type="submit">Simpan Laporan</button><p id="formMessage" class="message"></p></form></section>
 <section id="records" class="panel"><div class="section-head"><div><h2>Data Laporan</h2><p>Data tersimpan lokal pada perangkat ini.</p></div><button class="secondary" id="exportCsv">Export CSV</button></div><input id="search" class="search" placeholder="Cari nomor, lokasi, atau uraian..."><div id="recordList" class="record-list"></div></section>
 <section id="settings" class="panel"><div class="section-head"><div><h2>Identitas Perusahaan & Akun</h2><p>Identitas bersifat opsional dan digunakan pada laporan.</p></div></div><form id="companyForm" class="form-rows"><label>Logo Perusahaan<input id="companyLogo" type="file" accept="image/*"><div id="logoPreview" class="preview"></div></label><label>Nama Perusahaan<input id="companyName" placeholder="Nama perusahaan"></label><label>Nama Region<input id="regionName" placeholder="Nama region"></label><label>Nama Estate<input id="estateName" placeholder="Nama estate"></label><button class="primary" type="submit">Simpan Identitas</button><p id="companyMessage" class="message"></p></form><hr><h3>Ubah Username dan Password</h3><form id="accountForm" class="form-rows"><label>Username Baru<input id="newUsername" autocomplete="username" required></label><label>Password Baru (minimal 8 karakter)<input id="newPassword" type="password" minlength="8" autocomplete="new-password" required></label><button class="secondary" type="submit">Perbarui Akun</button><p id="accountMessage" class="message"></p></form></section>
-<section id="backup" class="panel"><div class="section-head"><div><h2>Backup & Pemulihan</h2><p>Cadangkan data secara berkala.</p></div></div><div class="notice">Data tersimpan di perangkat ini. Simpan backup secara berkala agar laporan tidak hilang jika browser atau perangkat bermasalah.</div><button class="primary" id="backupBtn">Download Backup Data (JSON)</button><label class="import-label">Pulihkan dari Backup JSON<input type="file" id="restoreFile" accept="application/json"></label><p id="backupMessage" class="message"></p></section></main><footer>FIRE REPORT • Formulir Laporan Kebakaran</footer></div><script src="https://cdn.jsdelivr.net/npm/html-docx-js@0.3.1/dist/html-docx.js"></script><script>if(new URLSearchParams(location.search).get("setup")==="1"){localStorage.removeItem("fireReportAccount");sessionStorage.removeItem("fireReportLoggedIn");document.addEventListener("DOMContentLoaded",function(){var c=document.getElementById("loginCaption"),b=document.getElementById("loginSubmit"),u=document.getElementById("loginUser"),p=document.getElementById("loginPass");if(c)c.textContent="Buat akun administrator pertama kali";if(b)b.innerHTML="BUAT AKUN →";if(u)u.value="";if(p)p.value="";});}</script><script src="assets/js/app.js?v=21"></script></body></html>
+<section id="backup" class="panel"><div class="section-head"><div><h2>Backup & Pemulihan</h2><p>Cadangkan data secara berkala.</p></div></div><div class="notice">Data tersimpan di perangkat ini. Simpan backup secara berkala agar laporan tidak hilang jika browser atau perangkat bermasalah.</div><button class="primary" id="backupBtn">Download Backup Data (JSON)</button><label class="import-label">Pulihkan dari Backup JSON<input type="file" id="restoreFile" accept="application/json"></label><p id="backupMessage" class="message"></p></section></main><footer>FIRE REPORT • Formulir Laporan Kebakaran</footer></div><script src="https://cdn.jsdelivr.net/npm/html-docx-js@0.3.1/dist/html-docx.js"></script><script>if(new URLSearchParams(location.search).get("setup")==="1"){localStorage.removeItem("fireReportAccount");sessionStorage.removeItem("fireReportLoggedIn");document.addEventListener("DOMContentLoaded",function(){var c=document.getElementById("loginCaption"),b=document.getElementById("loginSubmit"),u=document.getElementById("loginUser"),p=document.getElementById("loginPass");if(c)c.textContent="Buat akun administrator pertama kali";if(b)b.innerHTML="BUAT AKUN →";if(u)u.value="";if(p)p.value="";});}</script><script src="assets/js/app.js?v=22"></script><script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const form=$('loginForm'),button=$('loginSubmit'),caption=$('loginCaption'),message=$('loginMessage');
+  if(!form||!button||!caption||!message)return;
+  const hash=async value=>{
+    if(window.crypto&&crypto.subtle){
+      try{const bytes=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value));return 'sha256:'+Array.from(new Uint8Array(bytes)).map(v=>v.toString(16).padStart(2,'0')).join('');}catch(e){}
+    }
+    let h=2166136261;for(let i=0;i<value.length;i++){h^=value.charCodeAt(i);h=Math.imul(h,16777619);}
+    return 'local:'+(h>>>0).toString(16);
+  };
+  const refresh=()=>{
+    const exists=!!localStorage.getItem('fireReportAccount');
+    caption.textContent=exists?'Masuk untuk melanjutkan':'Buat akun administrator pertama kali';
+    button.innerHTML=exists?'MASUK <span>→</span>':'BUAT AKUN <span>→</span>';
+  };
+  const enter=()=>{
+    $('loginScreen').hidden=true;
+    $('appShell').hidden=false;
+    try{if(typeof loadCompany==='function')loadCompany();}catch(e){console.warn(e);}
+    try{if(typeof renderSummary==='function'&&typeof db!=='undefined'&&db)renderSummary();}catch(e){console.warn(e);}
+  };
+  form.onsubmit=async function(ev){
+    ev.preventDefault();ev.stopImmediatePropagation();
+    const username=$('loginUser').value.trim(),password=$('loginPass').value;
+    message.textContent='';
+    if(!username){message.textContent='Username wajib diisi.';return;}
+    button.disabled=true;
+    try{
+      const raw=localStorage.getItem('fireReportAccount');
+      if(!raw){
+        if(password.length<8){message.textContent='Password minimal 8 karakter.';return;}
+        const account={username:username,hash:await hash(password)};
+        localStorage.setItem('fireReportAccount',JSON.stringify(account));
+        const check=JSON.parse(localStorage.getItem('fireReportAccount')||'null');
+        if(!check||check.username!==username||check.hash!==account.hash)throw new Error('Penyimpanan akun gagal.');
+        sessionStorage.setItem('fireReportLoggedIn','1');
+        enter();
+      }else{
+        const account=JSON.parse(raw),entered=await hash(password);
+        if(username===account.username&&entered===account.hash){sessionStorage.setItem('fireReportLoggedIn','1');enter();}
+        else message.textContent='Username atau password salah.';
+      }
+    }catch(err){message.textContent='Gagal memproses akun: '+(err.message||'kesalahan penyimpanan');}
+    finally{button.disabled=false;refresh();}
+  };
+  const reset=$('resetLoginAccount');
+  if(reset)reset.addEventListener('click',function(ev){
+    ev.preventDefault();
+    localStorage.removeItem('fireReportAccount');
+    sessionStorage.removeItem('fireReportLoggedIn');
+    $('loginUser').value='';$('loginPass').value='';message.textContent='';
+    refresh();
+  });
+  refresh();
+  if(localStorage.getItem('fireReportAccount')&&sessionStorage.getItem('fireReportLoggedIn')==='1')enter();
+})();
+</script></body></html>
