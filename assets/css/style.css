@@ -79,3 +79,7 @@ body{background:#fff7f6;color:#302323}.top{background:linear-gradient(135deg,#7f
 .login-card input::placeholder{font-weight:700;opacity:1}
 .login-card .login-submit,.login-card .primary{font-weight:900!important;text-shadow:0 1px 1px rgba(0,0,0,.15)}
 .login-card .login-secure b,.login-card .login-secure small,.login-card .login-foot{font-weight:800!important}
+
+
+/* Login controls usability on mobile */
+.password-wrap{position:relative;z-index:2}.password-toggle{z-index:5;right:6px;top:9px;display:grid;place-items:center;cursor:pointer;pointer-events:auto;touch-action:manipulation}.reset-account{display:block;width:100%;margin:8px auto 0;padding:9px 6px;border:0;background:transparent;color:#7f1010;font-size:12px;font-weight:800;text-decoration:underline;cursor:pointer;touch-action:manipulation;position:relative;z-index:2}
