@@ -29,7 +29,7 @@ function showApp(){
   $('loginScreen').hidden=true;
   $('appShell').hidden=false;
   loadCompany();
-  renderSummary().catch(e=>console.error('Gagal memuat ringkasan',e));
+  if(db) renderSummary().catch(e=>console.error('Gagal memuat ringkasan',e));
 }
 window.startAccountRecovery=function(ev){
   if(ev){ev.preventDefault();ev.stopPropagation();}
@@ -100,4 +100,4 @@ $('companyForm').onsubmit=e=>{e.preventDefault();localStorage.setItem('fireRepor
 $('accountForm').onsubmit=async e=>{e.preventDefault();const p=$('newPassword').value;if(p.length<8){$('accountMessage').textContent='Password minimal 8 karakter.';return}localStorage.setItem('fireReportAccount',JSON.stringify({username:$('newUsername').value.trim(),hash:await hashText(p)}));$('accountMessage').textContent='Akun diperbarui.';e.target.reset()};
 // Explicit account recovery URL: clear only admin credentials; keep IndexedDB reports and company settings.
 if(new URLSearchParams(location.search).get('setup')==='1'){localStorage.removeItem('fireReportAccount');sessionStorage.removeItem('fireReportLoggedIn');history.replaceState({},'',location.pathname);}
-if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}));openDB().then(()=>{renderSummary();authInit()}).catch(e=>alert('Database gagal dibuka: '+e.message));window.addEventListener('online',()=>{if($('connection'))$('connection').textContent='● Online';if($('loginConnection'))$('loginConnection').textContent='ONLINE'});window.addEventListener('offline',()=>{if($('connection'))$('connection').textContent='● Offline Ready';if($('loginConnection'))$('loginConnection').textContent='OFFLINE • DATA LOKAL AKTIF'});
+if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}));authInit();openDB().then(()=>{if($('appShell')&&!$('appShell').hidden)renderSummary();}).catch(e=>{console.error('Database gagal dibuka:',e);alert('Database laporan gagal dibuka: '+(e.message||'periksa izin penyimpanan browser'));});window.addEventListener('online',()=>{if($('connection'))$('connection').textContent='● Online';if($('loginConnection'))$('loginConnection').textContent='ONLINE'});window.addEventListener('offline',()=>{if($('connection'))$('connection').textContent='● Offline Ready';if($('loginConnection'))$('loginConnection').textContent='OFFLINE • DATA LOKAL AKTIF'});
