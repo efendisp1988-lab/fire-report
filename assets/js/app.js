@@ -14,14 +14,84 @@ window.wordOne=async id=>{const x=(await all()).find(z=>z.id===id);if(!x)return;
 \n$('backupBtn').onclick=async()=>{const data=await all(),blob=new Blob([JSON.stringify({app:'Fire Report',version:2,exported:new Date().toISOString(),reports:data},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='fire-report-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href);$('backupMessage').textContent='Backup berhasil dibuat.'};
 $('restoreFile').onchange=async e=>{try{const d=JSON.parse(await e.target.files[0].text());if(!Array.isArray(d.reports))throw Error('Format backup tidak valid');if(!confirm('Pulihkan '+d.reports.length+' laporan?'))return;for(const x of d.reports)await save(x);$('backupMessage').textContent='Pemulihan selesai.';renderSummary()}catch(err){$('backupMessage').textContent='Gagal: '+err.message}e.target.value=''};
 $('exportCsv').onclick=async()=>{const a=await all(),cols=['reportNo','status','eventDate','eventDay','eventTime','eventLocation','coordinates','initial','response','condition'],csv=[cols.join(';'),...a.map(x=>cols.map(k=>'"'+String(x[k]||'').replace(/"/g,'""')+'"').join(';'))].join('\n'),blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),el=document.createElement('a');el.href=URL.createObjectURL(blob);el.download='fire-report.csv';el.click();URL.revokeObjectURL(el.href)};
-async function hashText(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('')}
-function showApp(){$('loginScreen').hidden=true;$('appShell').hidden=false;loadCompany();renderSummary()}
-window.startAccountRecovery=function(ev){if(ev){ev.preventDefault();ev.stopPropagation();}try{localStorage.removeItem('fireReportAccount');sessionStorage.removeItem('fireReportLoggedIn');}catch(e){console.error(e)}const u=document.getElementById('loginUser'),p=document.getElementById('loginPass'),m=document.getElementById('loginMessage'),c=document.getElementById('loginCaption'),b=document.getElementById('loginSubmit');if(u)u.value='';if(p){p.value='';p.type='password';}if(m)m.textContent='';if(c)c.textContent='Buat akun administrator pertama kali';if(b)b.innerHTML='BUAT AKUN <span>→</span>';const screen=document.getElementById('loginScreen'),shell=document.getElementById('appShell');if(shell)shell.hidden=true;if(screen)screen.hidden=false;if(u)u.focus();return false;};
-function authInit(){const exists=!!localStorage.getItem('fireReportAccount');$('loginCaption').textContent=exists?'Masuk untuk melanjutkan':'Buat akun administrator pertama kali';$('loginSubmit').innerHTML=exists?'MASUK <span>→</span>':'BUAT AKUN <span>→</span>';
-const toggle=$('toggleLoginPassword');if(toggle){toggle.type='button';toggle.onclick=function(ev){ev.preventDefault();const field=$('loginPass');const show=field.type==='password';field.type=show?'text':'password';toggle.setAttribute('aria-label',show?'Sembunyikan kata sandi':'Tampilkan kata sandi');};}
-const status=$('loginConnection');const updateStatus=()=>{if(status)status.textContent=navigator.onLine?'ONLINE':'OFFLINE • DATA LOKAL AKTIF'};updateStatus();
-$('loginForm').onsubmit=async e=>{e.preventDefault();const u=$('loginUser').value.trim(),p=$('loginPass').value;const stored=localStorage.getItem('fireReportAccount');if(!stored){if(!u){$('loginMessage').textContent='Username wajib diisi.';return}if(p.length<8){$('loginMessage').textContent='Password minimal 8 karakter.';return}localStorage.setItem('fireReportAccount',JSON.stringify({username:u,hash:await hashText(p)}));sessionStorage.setItem('fireReportLoggedIn','1');showApp();return;}const account=JSON.parse(stored);if(u===account.username&&await hashText(p)===account.hash){sessionStorage.setItem('fireReportLoggedIn','1');showApp();}else $('loginMessage').textContent='Username atau password salah. Jika lupa, pilih Buat akun baru.';};
-if(localStorage.getItem('fireReportAccount')&&sessionStorage.getItem('fireReportLoggedIn')==='1')showApp();else $('loginScreen').hidden=false;
+async function hashText(s){
+  try{
+    if(globalThis.crypto && crypto.subtle){
+      const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));
+      return 'sha256:'+Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');
+    }
+  }catch(e){console.warn('SHA-256 tidak tersedia, gunakan fallback lokal',e)}
+  let h=2166136261;
+  for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}
+  return 'local:'+ (h>>>0).toString(16);
+}
+function showApp(){
+  $('loginScreen').hidden=true;
+  $('appShell').hidden=false;
+  loadCompany();
+  renderSummary().catch(e=>console.error('Gagal memuat ringkasan',e));
+}
+window.startAccountRecovery=function(ev){
+  if(ev){ev.preventDefault();ev.stopPropagation();}
+  localStorage.removeItem('fireReportAccount');
+  sessionStorage.removeItem('fireReportLoggedIn');
+  const u=$('loginUser'),p=$('loginPass'),m=$('loginMessage');
+  if(u)u.value='';if(p){p.value='';p.type='password';}if(m)m.textContent='';
+  $('loginCaption').textContent='Buat akun administrator pertama kali';
+  $('loginSubmit').innerHTML='BUAT AKUN <span>→</span>';
+  $('loginScreen').hidden=false;$('appShell').hidden=true;
+  return false;
+};
+function authInit(){
+  const form=$('loginForm'),button=$('loginSubmit'),message=$('loginMessage');
+  const refreshMode=()=>{
+    const exists=!!localStorage.getItem('fireReportAccount');
+    $('loginCaption').textContent=exists?'Masuk untuk melanjutkan':'Buat akun administrator pertama kali';
+    button.innerHTML=exists?'MASUK <span>→</span>':'BUAT AKUN <span>→</span>';
+  };
+  refreshMode();
+  const toggle=$('toggleLoginPassword');
+  if(toggle){toggle.type='button';toggle.onclick=ev=>{ev.preventDefault();const field=$('loginPass'),show=field.type==='password';field.type=show?'text':'password';toggle.setAttribute('aria-label',show?'Sembunyikan kata sandi':'Tampilkan kata sandi');};}
+  const status=$('loginConnection');
+  const updateStatus=()=>{if(status)status.textContent=navigator.onLine?'ONLINE':'OFFLINE • DATA LOKAL AKTIF'};
+  updateStatus();
+  form.onsubmit=async e=>{
+    e.preventDefault();
+    message.textContent='';
+    button.disabled=true;
+    const username=$('loginUser').value.trim();
+    const password=$('loginPass').value;
+    try{
+      if(!username){message.textContent='Username wajib diisi.';return;}
+      const stored=localStorage.getItem('fireReportAccount');
+      if(!stored){
+        if(password.length<8){message.textContent='Password minimal 8 karakter.';return;}
+        const account={username,hash:await hashText(password)};
+        localStorage.setItem('fireReportAccount',JSON.stringify(account));
+        const verify=JSON.parse(localStorage.getItem('fireReportAccount')||'null');
+        if(!verify||verify.username!==username||verify.hash!==account.hash)throw new Error('Akun tidak berhasil disimpan di perangkat.');
+        sessionStorage.setItem('fireReportLoggedIn','1');
+        showApp();
+        return;
+      }
+      const account=JSON.parse(stored);
+      const enteredHash=await hashText(password);
+      if(username===account.username && (enteredHash===account.hash || enteredHash.replace(/^sha256:/,'')===String(account.hash).replace(/^sha256:/,''))){
+        sessionStorage.setItem('fireReportLoggedIn','1');
+        showApp();
+      }else{
+        message.textContent='Username atau password tidak cocok. Periksa kembali atau gunakan Buat akun baru.';
+      }
+    }catch(err){
+      console.error('Kesalahan login Fire Report:',err);
+      message.textContent='Gagal memproses akun: '+(err.message||'Kesalahan perangkat');
+    }finally{
+      button.disabled=false;
+      refreshMode();
+    }
+  };
+  if(localStorage.getItem('fireReportAccount')&&sessionStorage.getItem('fireReportLoggedIn')==='1')showApp();
+  else $('loginScreen').hidden=false;
 }
 $('logoutBtn').onclick=()=>{sessionStorage.removeItem('fireReportLoggedIn');$('appShell').hidden=true;$('loginScreen').hidden=false;$('loginPass').value=''};
 let companyLogoData='';function loadCompany(){const x=JSON.parse(localStorage.getItem('fireReportCompany')||'{}');$('companyName').value=x.name||'';$('regionName').value=x.region||'';$('estateName').value=x.estate||'';companyLogoData=x.logo||'';$('logoPreview').innerHTML=companyLogoData?'<img src=\"'+companyLogoData+'\">':''}
