@@ -55,3 +55,7 @@ body{background:#fff7f6;color:#302323}.top{background:linear-gradient(135deg,#7f
 @media(max-width:420px){.login-screen{background-position:center center;padding-left:12px;padding-right:12px}.login-card{width:100%;max-width:365px;margin-top:clamp(220px,39vh,315px);margin-bottom:clamp(105px,16vh,145px);padding:15px 14px;border-radius:19px}.login-card label{margin:8px 0}.login-card input{height:42px}.login-submit{height:45px}}
 @media(max-height:760px){.login-screen{background-position:center center}.login-card{margin-top:190px;margin-bottom:90px;padding:13px 15px}.login-card label{margin:7px 0}.login-card input{height:39px}.login-submit{height:42px;margin-top:5px}.login-secure{margin-top:5px;padding:8px}.login-foot{margin-top:7px}}
 @media(min-width:700px){.login-screen{background-position:center 48%;padding:24px}.login-card{margin-top:250px;margin-bottom:110px}.login-card input{height:48px}}
+
+
+/* Login panel: increase transparency while preserving text readability */
+.login-card{background:rgba(246,253,248,.52)!important;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)}
