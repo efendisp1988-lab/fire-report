@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#173b2b"><meta name="description" content="Aplikasi offline pelaporan dan monitoring pencegahan kebakaran hutan dan lahan"><link rel="manifest" href="manifest.json"><link rel="stylesheet" href="assets/css/style.css"><title>Fire Report | Monitoring Karhutla</title></head>
+<body><header class="top"><div><div class="eyebrow">K3L • ENVIRONMENT</div><h1>FIRE REPORT</h1><p>Pelaporan & Pencegahan Karhutla</p></div><span class="offline" id="connection">● Offline Ready</span></header>
+<main><section class="summary"><article><span>Total Laporan</span><strong id="total">0</strong></article><article><span>Patroli</span><strong id="patrol">0</strong></article><article><span>Temuan / Kejadian</span><strong id="incident">0</strong></article></section>
+<nav class="tabs"><button class="tab active" data-tab="form">＋ Buat Laporan</button><button class="tab" data-tab="records">☷ Data Laporan</button><button class="tab" data-tab="backup">⇧ Backup</button></nav>
+<section id="form" class="panel active"><div class="section-head"><div><h2>Formulir Laporan</h2><p>Isi kondisi lapangan dan simpan di perangkat.</p></div></div>
+<form id="reportForm"><div class="grid">
+<label>Jenis laporan<select id="type" required><option value="Patroli Pencegahan">Patroli Pencegahan</option><option value="Temuan Titik Api">Temuan Titik Api</option><option value="Kejadian Kebakaran">Kejadian Kebakaran</option><option value="Pemeriksaan Sarana">Pemeriksaan Sarana</option></select></label>
+<label>Tanggal & waktu<input id="date" type="datetime-local" required></label>
+<label>Nama pelapor<input id="reporter" required placeholder="Nama petugas"></label>
+<label>Unit / afdeling / lokasi<input id="unit" placeholder="Contoh: Afdeling 2 / Blok C-12"></label>
+<label>Koordinat lokasi<div class="inline"><input id="location" placeholder="Belum diambil" readonly><button type="button" class="secondary" id="gps">Ambil GPS</button></div></label>
+<label>Status kondisi<select id="status"><option>Normal / Aman</option><option>Waspada</option><option>Darurat</option><option>Selesai Ditangani</option></select></label>
+<label class="full">Uraian kondisi / temuan<textarea id="description" rows="3" required placeholder="Jelaskan kondisi lapangan, cuaca, vegetasi, sumber air, akses, atau kronologi..."></textarea></label>
+<label class="full">Tindakan pencegahan / penanganan<textarea id="action" rows="3" placeholder="Tindakan yang dilakukan dan rekomendasi tindak lanjut..."></textarea></label>
+<label class="full">Foto dokumentasi<input id="photos" type="file" accept="image/*" capture="environment" multiple><small>Foto disimpan di perangkat ini.</small><div id="photoPreview" class="preview"></div></label>
+<div class="full"><span class="label">Tanda tangan pelapor</span><canvas id="signature" width="720" height="220"></canvas><button type="button" class="text-btn" id="clearSign">Hapus tanda tangan</button></div>
+</div><button class="primary" type="submit">Simpan Laporan</button><p id="formMessage" class="message" role="status"></p></form></section>
+<section id="records" class="panel"><div class="section-head"><div><h2>Data Laporan</h2><p>Data tersimpan lokal pada perangkat ini.</p></div><button class="secondary" id="exportCsv">Export CSV</button></div><input id="search" class="search" placeholder="Cari jenis, pelapor, unit, atau uraian..."><div id="recordList" class="record-list"></div></section>
+<section id="backup" class="panel"><div class="section-head"><div><h2>Backup & Pemulihan</h2><p>Cadangkan data secara berkala agar tidak hilang.</p></div></div><div class="notice">Data Fire Report hanya tersimpan di browser/perangkat ini. Tidak ada sinkronisasi server. Jika data browser dihapus atau perangkat rusak, laporan dapat hilang. Simpan file backup secara berkala.</div><button class="primary" id="backupBtn">Download Backup Data (JSON)</button><label class="import-label">Pulihkan dari Backup JSON<input type="file" id="restoreFile" accept="application/json"></label><p id="backupMessage" class="message"></p></section>
+</main><footer>FIRE REPORT • Aplikasi monitoring Karhutla offline</footer><script src="assets/js/app.js"></script></body></html>
