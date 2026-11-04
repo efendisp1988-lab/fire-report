@@ -150,6 +150,16 @@ body{background:#fff7f6;color:#302323}.top{background:linear-gradient(135deg,#7f
 }
 /* Match the installed-app viewport on Android */
 @media(max-width:600px) and (display-mode:standalone){
- html,body{height:100%;min-height:0;overflow:hidden}
+ html,body{height:auto;min-height:100%;overflow-x:hidden;overflow-y:auto!important}
+ body{overscroll-behavior-y:auto}
  #loginScreen.login-screen{height:100dvh!important;min-height:0!important}
+}
+
+/* Standalone app: dashboard and long forms scroll; login remains viewport-locked */
+@media(max-width:600px) and (display-mode:standalone){
+ html,body{overflow-y:auto!important;height:auto!important;min-height:100%!important}
+ body{position:static!important}
+ #loginScreen.login-screen{position:fixed!important;inset:0!important;height:100dvh!important;overflow:hidden!important}
+ #appShell{min-height:100dvh;overflow:visible}
+ main,.panel.active{overflow:visible}
 }
