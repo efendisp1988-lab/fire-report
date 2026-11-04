@@ -86,3 +86,47 @@ body{background:#fff7f6;color:#302323}.top{background:linear-gradient(135deg,#7f
 
 /* Hide horizontal scrollbar below module tabs; swipe scrolling remains available */
 .tabs{scrollbar-width:none;-ms-overflow-style:none}.tabs::-webkit-scrollbar{display:none}
+
+/* MOBILE LOGIN: fit the login screen to one phone viewport; dashboard remains scrollable */
+@media(max-width:600px){
+ html,body{width:100%;max-width:100%;overflow-x:hidden}
+ .login-screen{
+  height:100svh;height:100dvh;min-height:0;
+  box-sizing:border-box;display:flex;align-items:center;justify-content:center;
+  padding:10px 12px!important;margin:0;overflow:hidden;
+  background-position:center center;background-size:cover;
+ }
+ .login-card{
+  width:min(100%,390px);max-width:390px;
+  max-height:calc(100dvh - 20px);overflow-y:auto;
+  margin:0!important;padding:clamp(11px,2.2vh,17px) 14px!important;
+  border-radius:18px;
+ }
+ .login-card-heading{gap:9px;margin-bottom:4px}
+ .login-mark{flex-basis:42px;width:42px;height:42px;font-size:22px}
+ .login-card h1{font-size:clamp(21px,5.8vw,26px)}
+ .login-card .login-caption{margin:5px 0 8px;font-size:13px}
+ .login-card label{margin:7px 0;font-size:11px}
+ .login-card input{height:39px;margin-top:4px;padding:9px 11px;font-size:14px}
+ .password-toggle{top:7px;height:34px}
+ .login-submit{height:42px;margin-top:5px;font-size:15px}
+ .login-card .message{min-height:12px;margin:4px 0 0}
+ .reset-account{margin-top:5px;padding:7px 4px;font-size:11px}
+ .login-secure{gap:8px;margin-top:5px;padding:7px 9px}
+ .login-secure>span{flex-basis:24px;height:24px}
+ .login-secure b{font-size:9px}
+ .login-secure small{font-size:8px}
+ .login-foot{gap:6px;margin-top:6px;font-size:8px}
+}
+/* Very short phone screens: compact the login card further */
+@media(max-width:600px) and (max-height:700px){
+ .login-card{padding:9px 12px!important}
+ .login-card-heading{margin-bottom:2px}
+ .login-mark{flex-basis:36px;width:36px;height:36px;font-size:19px}
+ .login-card .login-caption{margin:3px 0 5px}
+ .login-card label{margin:5px 0}
+ .login-card input{height:35px}
+ .login-submit{height:38px}
+ .login-secure{margin-top:3px;padding:5px 7px}
+ .login-foot{margin-top:4px}
+}
