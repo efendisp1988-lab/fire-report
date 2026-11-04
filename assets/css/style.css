@@ -130,3 +130,26 @@ body{background:#fff7f6;color:#302323}.top{background:linear-gradient(135deg,#7f
  .login-secure{margin-top:3px;padding:5px 7px}
  .login-foot{margin-top:4px}
 }
+
+/* Installed PWA login: pin the login surface to the device viewport and prevent page-level scrolling */
+@media(max-width:600px){
+ body:has(#loginScreen:not([hidden])){height:100%;overflow:hidden;overscroll-behavior:none}
+ #loginScreen.login-screen{
+  position:fixed!important;inset:0!important;
+  width:100vw!important;height:100vh!important;height:100dvh!important;
+  min-height:0!important;max-height:100dvh!important;
+  margin:0!important;overflow:hidden!important;
+  overscroll-behavior:none;touch-action:pan-y;
+  padding:10px 12px!important;
+ }
+ #loginScreen .login-card{
+  flex:0 1 auto;max-height:calc(100dvh - 20px)!important;
+  overflow-y:auto!important;overscroll-behavior:contain;
+  margin:0!important;
+ }
+}
+/* Match the installed-app viewport on Android */
+@media(max-width:600px) and (display-mode:standalone){
+ html,body{height:100%;min-height:0;overflow:hidden}
+ #loginScreen.login-screen{height:100dvh!important;min-height:0!important}
+}
