@@ -37,8 +37,8 @@ window.wordOne=async id=>{
     const footer=new D.Footer({children:[signTable]});
     const documentObj=new D.Document({sections:[
       {properties:{page:pageProps.page},footers:{default:footer},children:page1},
-      {properties:{type:D.SectionType.NEXT_PAGE,page:pageProps.page},children:page2},
-      {properties:{type:D.SectionType.NEXT_PAGE,page:pageProps.page},children:page3}
+      {properties:{type:D.SectionType.NEXT_PAGE,page:pageProps.page},footers:{default:new D.Footer({children:[]})},children:page2},
+      {properties:{type:D.SectionType.NEXT_PAGE,page:pageProps.page},footers:{default:new D.Footer({children:[]})},children:page3}
     ]});
     const blob=await D.Packer.toBlob(documentObj),url=URL.createObjectURL(blob),a=document.createElement('a');
     a.href=url;a.download='Laporan-Kebakaran-'+(x.reportNo||'tanpa-nomor')+'.docx';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);
